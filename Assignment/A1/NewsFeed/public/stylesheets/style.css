@@ -1,0 +1,55 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background-color: beige;
+  
+}
+
+
+#news a {
+  color: blue;
+  font-family: Arial, Helvetica, Times;
+  font-style: italic;
+  text-decoration: underline;
+  background-color: antiquewhite;
+}
+
+#pageindex a{
+  font-size: large;
+  vertical-align: middle;
+  text-decoration: underline;
+  color: darkgreen;
+}
+
+#image {
+  width: 20px;
+  height: 20px;
+  float: left;
+}
+
+
+#comments{
+  vertical-align: middle;
+}
+
+#loginHeader{
+  background-color: bisque;
+  vertical-align: middle;
+
+}
+
+#loginHeader{
+  text-align: center;
+}
+
+#loginDetails{
+  text-align: center;
+  font-size: 30px;
+
+}
+
+#goBack{
+  float: left;
+  color: red;
+  font-size: 30px;
+}

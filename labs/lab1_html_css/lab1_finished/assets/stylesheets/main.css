@@ -1,0 +1,52 @@
+@import url("basics.css");
+
+/*
+  ================= Your task: modify or add more styles below  =================
+*/
+
+header *, nav * {
+  /* Step 9.1: set the text color to white */
+  color: white;
+}
+
+.contents {
+  /* Step 9.2: set the background color to white */
+  background-color: white;
+}
+
+header img {
+  /* Step 10: let the image float to left */
+  float: left;
+}
+
+/* Step 11: center the h2 headings in the content section */
+.contents h2{
+  text-align: center;
+}
+
+/* Step 12: write a .center class selector to center the table */
+.center{
+  margin: auto;
+}
+
+/* Step 13: select the submit button and add the following rules */
+input[type = "submit"]{
+  background-color: #2b6a92;
+  border: none;
+  color: #FFFFFF;
+  padding: 1em;
+}
+/*
+  
+*/
+
+
+/* Step 14: add the following rule to the button when mouse is hovering over it */
+input[type = "submit"]:hover{
+  box-shadow: 0 0 0.8em 0.1em grey;
+}
+/* 
+{
+  
+}
+*/

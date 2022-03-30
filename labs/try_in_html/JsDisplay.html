@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p>Hello world!</p>
+    <p>My name is DOM.</p>
+    <p id="demo1">I am very useful.</p>
+    <p id="demo2"></p>  
+    <p>Click the button to make a BUTTON element and <br> 
+            change color of the paragraph above</p>
+    <button onclick="myFunction()">Click me</button>
+<script>
+    var x = document.getElementsByTagName("p");
+    document.getElementById("demo2").innerHTML =
+    'The first paragraph on the page (index 0) is: ' + x[0].innerHTML;
+    function myFunction() {
+        var btn = document.createElement("BUTTON");
+        btn.innerHTML="Click me too";
+        document.body.appendChild(btn);
+        document.getElementById("demo2").style.color = "red";
+    }
+</script>
+</body>
+</html>
