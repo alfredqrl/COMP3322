@@ -57,12 +57,14 @@ $("#course_table").on('click','.linkDelete', deleteCourse);
 // step 8.2
 function deleteCourse(event){
     event.preventDefault();
-    
-    
-
-
-
-
+    $.ajax({
+        type: "DELETE",
+        url: "/users/delete_course/" + $(this).attr('rel'),
+        success: function(result){
+            alert(result);
+            showAllCourses();
+        }
+    })
 }
 
 

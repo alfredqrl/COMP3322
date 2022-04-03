@@ -15,9 +15,17 @@ router.get('/get_courses', (req, res) => {
 
 // step 8.1
 router.delete('/delete_course/:id', (req, res) => {
-    
-
-
+    var db = req.db;
+    var col = db.get("courseList");
+    console.log(req.params.id);
+    var courseID = req.params.id;
+    col.remove({"_id":courseID}, function(err, result){
+        if (err == null){
+            res.send("Successfully deleted");
+        }else{
+            res.send(err);
+        }
+    })
 
 });
 
