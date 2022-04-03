@@ -31,7 +31,21 @@ function showAllCourses(){
 
     //$("#load")
     // Jquery source: https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js
-    
+    $.getJSON("/users/get_courses", function(courses_list){
+        console.log(courses_list);
+        $.each(courses_list, function(i, item){
+            //console.log(this.name);
+            table_content = table_content + `
+                <tr>
+                <td>${this.name}</td>
+                <td>${this.credit}</td>
+                <td>${this.semester}</td>
+                <td><a href="#" class="linkDelete" rel="${this._id}">Delete</a></td>
+                </tr>
+            `;
+        })
+        $('#course_table').html(table_content);
+    })
 
 
 
