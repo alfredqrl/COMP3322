@@ -46,10 +46,6 @@ function showAllCourses(){
         })
         $('#course_table').html(table_content);
     })
-
-
-
-
 }
 
 $("#course_table").on('click','.linkDelete', deleteCourse);
@@ -75,6 +71,7 @@ function addOrUpdateCourse(event){
 
     if(isInputFilled()){
         var name = $("#inputName").val()
+        console.log(name);
         var new_doc = {
             "name": name,
             "credit": $("#inputCredit").val(),
@@ -83,23 +80,35 @@ function addOrUpdateCourse(event){
 
 		var names = courses_list.map(function(elem) { return elem.name; });
         var index = names.indexOf(name);
+        console.log(names);
+        console.log(name);
+        console.log(courses_list);
+        console.log(index);
+        //console.log(courses_list[index]._id);
         if(index != -1){
             // step 9.2 course exists - do update
-            
-
-
-
-
-
-
+            $.ajax({
+                type: "PUT",
+                data: new_doc,
+                url: `/users/update_course/${courses_list[index]._id}`,
+                dataType: "JSON",
+                success: function(result){
+                    alert(result.msg);
+                    showAllCourses();
+                }
+            })
         }else{
             // step 10.2 course doesn't exist - add
-            
-
-
-
-
-            
+            $.ajax({
+                type: "POST",
+                data: new_doc,
+                dataType: "JSON",
+                url: "/users/add_course",
+                success: function(result){
+                    alert(result.msg);
+                    showAllCourses();
+                }
+            })          
         }
     }else alert("Please fill in all fields.")
 }
