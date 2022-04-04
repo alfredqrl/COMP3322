@@ -31,9 +31,10 @@ function showAllCourses(){
 
     //$("#load")
     // Jquery source: https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js
-    $.getJSON("/users/get_courses", function(courses_list){
-        console.log(courses_list);
-        $.each(courses_list, function(i, item){
+    $.getJSON("/users/get_courses", function(courses){
+        //console.log(courses_list);
+        courses_list = courses;
+        $.each(courses, function(i, item){
             //console.log(this.name);
             table_content = table_content + `
                 <tr>
