@@ -5,7 +5,6 @@ class DropDownList extends React.Component{
 		return(
 			<div>
 				<b>Choose one subject </b>
-
 				<select onChange={e=>this.props.handleNotesChange(e.target.value)}>
 					<option value='all'>all</option>
 					<option value='science'>science</option>
@@ -115,6 +114,7 @@ class Lab7App extends React.Component{
 	handleNotesChange(option){
 	//step 5
 		if (option != 'all'){
+			//alert(userNotesDB.filter(note => (note.subject == option)));
 			this.setState({
 				userNotes: userNotesDB.filter(note => (note.subject == option)),
 				currentFilter: option
@@ -134,9 +134,9 @@ class Lab7App extends React.Component{
 				<h2>Lab7 Exercise</h2>
 				<DropDownList handleNotesChange={this.handleNotesChange}/>
 				{// step 3
-					userNotesDB.map((userNotes)=>
+					userNotes.map((userNote)=>
 						<p>
-							Note Subject: {userNotes.subject}; Note Content: {userNotes.content}
+							Note Subject: {userNote.subject}; Note Content: {userNote.content}
 						</p>
 					)
 				}	
