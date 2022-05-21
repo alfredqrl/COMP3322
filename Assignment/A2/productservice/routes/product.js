@@ -1,467 +1,303 @@
-//Jiang Feiyu
-//3035770800
-//Assignment-2
-
-const e = require("express");
-var cookie = require("cookie-parser");
-const { application } = require("express");
-var express = require("express");
+var express = require('express');
+const { append } = require('express/lib/response');
+const { default: monk } = require('monk');
 var router = express.Router();
 
-//Task1.1 进行数据提取，并且匹配产品类别和名称 (connect to task2)
-router.get("/loadpage", (req, res) => {
-  // 参数提取
-  var col = req.db.get("productCollection");
-  var category = req.query.category;
-  var searchstring = req.query.searchstring;
+router.get('/loadpage', (req, res)=>{
+    var categorySearch = req.query.category;
+    var searchString = req.query.searchstring;
 
-  // 若类别为所有，则返回全部
-  if (category == "") {
-	// 若搜索内容为空，则返回全部
-	if (searchstring == ""){
-		col.find({}, {}).then((docs) => {
-			res.json(docs);
-			})
-	}
-	// 若搜索内容不为空，则返回对应内容
-	else{
-		col.find({ name: {$regex:searchstring}}, {})
-      	.then((docs) => {
-			console.log("dew");
-			res.json(docs);
-      });
-	};
-  }
-  // 若为指定种类，则先判定该种类是否存在，否则返回报错
-  else {
-    col
-      .find({ category: category, name: {$regex:searchstring}}, {})
-      .then((docs) => {
-		res.json(docs);
-      });
-  }
+    console.log(categorySearch);
+    
+
+    var db = req.db;
+    var col = db.get('productCollection');
+
+    if (categorySearch == "all" && searchString == ""){
+        col.find({}, {sort:{"name":1}},function(err, result){if (err != null){res.send(err)}}).then((docx)=>{
+            res.json(docx);
+        })
+    }else if (categorySearch == "all" && searchString != ""){
+        col.find({"name": {$regex: searchString}}, {sort:{"name":1}},function(err, result){
+            if (err != null){
+                res.send(err);
+            }
+        }).then((docx)=>{
+            res.json(docx);
+        });
+    }else{
+        col.find({"category" : categorySearch, "name": {$regex: searchString}}, {sort:{"name":1}},function(err, result){
+            if (err != null){
+                res.send(err);
+            }
+        }).then((docx)=>{
+            res.json(docx);
+        });
+    }
 });
 
-//Task1.2 检索制造商和产品描述（完成）
-router.get("/loadproduct/:id", (req, res) => {
-  // 参数提取
-  var col = req.db.get("productCollection");
-  var id = req.params.id;
-//   console.log(id);
+router.get('/loadproduct/:productid', (req, res)=>{
+    var id = req.params.productid;
+    console.log(id);
+    var db = req.db;
+    var col = db.get('productCollection');
+    var json = [];
 
-  col.find({ _id: id },{}).then((docs) => {
-	  res.json(docs);
-	//   console.log(docs);
-  });
-});
-
-//Task1.3 用户检索
-router.post("/signin", (req, res) => {
-  var username = req.param('username');
-  var password = req.param('password');
-  var userdb = req.db;
-  var user = userdb.get("userCollection");
-res.setHeader("Access-Control-Allow-Credentials", "true");
-  user
-    .find({
-      username: username,
-      password: password,
+    col.find({_id:monk.id(id)}, function(err, result){
+        if (err != null){
+            res.send(err);
+        }
+    }).then((docx)=>{
+        json.push({"manufacturer":docx[0].manufacturer});
+        json.push({"description":docx[0].description});
+        res.json(docx);
     })
-    .then((user) => {
-      // 长度为1 说明用户存在
-      if(user[0]!=null){
-		// for(var i ;i<user.length;i++){
+});
 
-		// }
-        //设置cookie和过期时间
-        res.cookie("userId", user[0]._id.toString(), {maxAge: 900000, httpOnly: true});
-        //从数据库中对totalnum进行检索
-           res.send(
+router.post('/signin', (req, res)=>{
+    var username = req.body.username;
+    var password1 = req.body.password;
+    var json = [];
+
+    var db = req.db;
+    var col = db.get('userCollection');
+
+    col.find({username:username}, function(err, result){
+        if (err != null){
+            res.send(err);
+        }
+    }).then((docx)=>{
+        if (docx.length == 0){
+            res.send('Login failure');
+            return;
+        }
+        console.log(docx[0].password)
+        console.log(password1)
+
+        if (password1 == docx[0].password){
+            console.log("true");
+            var milliseconds = 60*1000;
+            res.cookie('userID', monk.id(docx[0]._id), {maxAge: milliseconds});
+            json.push({"totalnum":docx[0].totalnum});
+            res.send(json);
+        }else{
+            console.log("fail")
+            res.send('Login failure');
+        }
+    })
+});
+
+router.get('/signout', (req, res)=>{
+    res.clearCookie('userID');
+    res.send("");
+});
+
+router.get('/getsessioninfo', (req, res)=>{
+    var db = req.db;
+    var col = db.get('userCollection');
+    var json = [];
+
+    if (req.cookies.userID){
+        col.find({_id:monk.id(req.cookies.userID)}, function(err, result){
+            if (err != null){
+                res.send(err);
+            }
+        }).then((docx)=>{
+            json.push({"username": docx[0].username}, {"totalnum": docx[0].totalnum});
+            res.send(json);
+        })
+    }else{
+        res.send("");
+    }
+});
+
+router.put('/addtocart', (req, res)=>{
+    var productId = req.body.productId;
+    var quantity = parseInt(req.body.quantity);
+    var db = req.db;
+    var col = db.get('userCollection');
+    console.log("123")
+    col.find({_id: monk.id(req.cookies.userID)}, function(err, result){
+        if (err != null){
+            res.send(err);
+            return;
+        }
+    }).then((docx)=>{
+        //console.log(docx);
+        var cart = docx[0].cart;
+        var totalnum = docx[0].totalnum;
+        var found = false;
+        for (let i = 0; i < cart.length; i++){
+            console.log("1");
+            var product = cart[i];
+            console.log(product.productId + "  "+ productId);
+            if (product.productId == productId){
+                console.log("2");
+                cart[i].quantity = cart[i].quantity + quantity;
+                var totalnum = totalnum + quantity;
+                col.update(
+                    {"_id": monk.id(req.cookies.userID)},
+                    {$set:{
+                        "cart":cart, "totalnum":totalnum
+                    }},
+                    function(err, result){
+                        if (err == null){
+                            console.log("456");
+                            res.send({"totalnum": totalnum})
+                        }else{
+                            console.log("789");
+                            res.send({msg: err});
+                        }
+                    }
+                )
+                found = true;
+            }
+        }
+
+        console.log(found);
+
+        if (found == false){
+            console.log("false");
+            col.update(
+                {"_id": req.cookies.userID},
+                {$push:{
+                    "cart": {"productId":monk.id(productId), "quantity": quantity}
+                },
+                $set:{"totalnum":totalnum + quantity}
+            }, function(err, result){
+                if (err == null){
+                    console.log("234")
+                    res.send({"totalnum": totalnum + quantity})
+                }else{
+                    console.log("567")
+                    res.send({msg: err})
+                }
+            }
+            )
+        }
+    })
+});
+
+router.get('/loadcart', (req, res)=>{
+    var db = req.db;
+    var col = db.get('userCollection');
+    var col2 = db.get('productCollection');
+    var cart;
+    var json = [];
+
+    col.find({_id: monk.id(req.cookies.userID)}).then((docx)=>{
+        var valGet = docx
+        cart = valGet[0].cart;
+        json.push(cart);
+        json.push(valGet[0].totalnum);
+
+        if (cart.length != 0){
+            col.aggregate([
                 {
-                  status: "success",
-                  msg: "You have successfully logged in",
-                  name: username,
-                  userId: user[0]._id.toString(),
-                  totalnum: user[0].totalnum,
+                    $match: {
+                        _id: monk.id(req.cookies.userID)
+                    }
+                },
+                {
+                    $lookup:{
+                        from: "productCollection",
+                        localField: "cart.productId",
+                        foreignField: "_id",
+                        as: "info"
+                    }
                 }
-              );
-
-        // 若用户不存在
-      } else {
-        res.send(
-          {
-            status: "incorrect",
-            msg: "Login failure",
-          }
-        );
-      }
-    });
-});
-
-//Task1.4 退出
-router.get("/signout", (req, res) => {
-	res.clearCookie('userId');
-  // 若类别为所有，则返回全部
-  res.send();
-});
-
-//Task1.5 判断用户是否登录
-router.get("/getsessioninfo", (req, res) => {
-  console.log(req.cookies.userId);
-  var userId = req.cookies.userId;
-  var userdb = req.db;
-  var user = userdb.get("userCollection");
-  user
-    .find({
-      _id: userId,
-    })
-    .then((user) => {
-		  //console.log(user);
-	
-		if(user[0]!=null){
-			res.json(user[0]);
-		}else{
-			res.send();
-		}
-    })
-	// .then(() => {
-    //         res.send();
-    //     }).catch(e => {
-    //         // res.send();
-    //     });
-});
-
-//Task1.6 加购物车
-router.put("/addtocart", (req, res) => {
-  var productId = req.body('productId');
-  var quantity = req.body('quantity');
-  var userdb = req.db;
-  var userC = userdb.get("userCollection");
-  var col = req.db.get("productCollection");
-  var userId = req.cookies.userId;
-  console.log(req.cookies.userId);
-  console.log(productId)
-  console.log(user)
-  console.log(userC)
-  console.log(quantity)
-  userC
-    .find({
-      _id: userId,
-    })
-    .then((user) => {
-		  console.log(user);
-		  var exists=0;
-		if(user[0]!=null){
-			var totalnum;
-			totalnum = user[0].totalnum;
-			console.log(user);
-			console.log(user[0].cart);
-			for(var i=0;i<user[0].cart.length;i++){
-				console.log(user[0].cart[i].productId);
-				console.log(productId);
-				if(user[0].cart[i].productId==productId)
-				{
-					user[0].cart[i].quantity=user[0].cart[i].quantity+Number(quantity);
-					totalnum = totalnum+Number(quantity);
-					console.log(totalnum);
-					console.log(quantity);
-					exists=1;
-				}
-			}
-			console.log(exists);
-			if(exists==0){
-				user[0].cart[user[0].cart.length]={"productId" : productId, "quantity" : quantity};
-				totalnum = totalnum+Number(quantity);
-			}
-			console.log(user[0].username);
-			userC.update({username : user[0].username}, { $set: { "cart": user[0].cart, "totalnum": totalnum }}, (err, result) => { 
-				console.log(err);
-				console.log(result);
-			});		
-			user[0].totalnum=totalnum;
-			res.json({totalnum:totalnum});
-		}else{
-			res.send();
-		}
-    });			
-});
-
-// //Task1.6-2 加购物车
-// router.post("/addtocart", (req, res) => {
-//   var productId = req.param('productId');
-//   var quantity = req.param('quantity');
-//   var userdb = req.db;
-//   var userC = userdb.get("userCollection");
-//   var col = req.db.get("productCollection");
-//   var userId = req.cookies.userId;
-//   console.log(req.cookies.userId);
-//   userC
-//     .find({
-//       _id: userId,
-//     })
-//     .then((user) => {
-// 		  console.log(user);
-// 		  var exists=0;
-// 		if(user[0]!=null){
-// 			var totalnum;
-// 			totalnum = user[0].totalnum;
-// 			console.log(user);
-// 			console.log(user[0].cart);
-// 			for(var i=0;i<user[0].cart.length;i++){
-// 				console.log(user[0].cart[i].productId);
-// 				console.log(productId);
-// 				if(user[0].cart[i].productId==productId)
-// 				{
-// 					user[0].cart[i].quantity=user[0].cart[i].quantity+Number(quantity);
-// 					totalnum = totalnum+Number(quantity);
-// 					console.log(totalnum);
-// 					console.log(quantity);
-// 					exists=1;
-// 				}
-// 			}
-// 			console.log(exists);
-// 			if(exists==0){
-// 				user[0].cart[user[0].cart.length]={"productId" : productId, "quantity" : quantity};
-// 				totalnum = totalnum+Number(quantity);
-// 			}
-// 			console.log(user[0].username);
-// 			userC.update({username : user[0].username}, { $set: { "cart": user[0].cart }}, (err, result) => { 
-// 				console.log(err);
-// 				console.log(result);
-// 			});		
-// 			userC.update({username : user[0].username}, { $set: { "totalnum": totalnum }}, (err, result) => { 
-// 				console.log(err);
-// 				console.log(result);
-// 			});	
-// 			user[0].totalnum=totalnum;
-// 			res.json({totalnum:totalnum});
-// 		}else{
-// 			res.send();
-// 		}
-//     });			
-// });
-
-
-//Task1.7 加载购物车
-router.get("/loadcart", (req, res) => {
-  // 参数提取
-  var mycartproducts = new Array();
-  var mycarts = new Array();
-  var userdb = req.db;
-  var userC = userdb.get("userCollection");
-  var userId = req.cookies.userId;
-  var col = req.db.get("productCollection");
- userC
-    .find({
-      _id: userId,
-    })
-    .then((user) => {
-		  console.log(user[0].cart);
-	  for(var i=0;i<user[0].cart.length;i++){
-				console.log(user[0].cart[i].productId);
-				mycartproducts[i]=user[0].cart[i].productId;		
-			}
-		col.find({ _id : { $in : mycartproducts } } )
-			.then((products) => {
-console.log(products)
-			 for(var i=0;i<products.length;i++){
-				console.log(products[i].name);
-				var quantity;
-				for(var j=0;j<user[0].cart.length;j++){
-					console.log(products[i].name);
-					console.log(user[0].cart[j].productId);
-					if(products[i]._id==user[0].cart[j].productId){
-						quantity=user[0].cart[j].quantity;
-					}
-				}
-				mycarts[i]={
-					productId:products[i]._id,
-					name:products[i].name,
-					price:products[i].price,
-					quantity:quantity,
-					img: products[i].productImage
-				}
-			}
-console.log(mycarts);
-			res.send({
-                  status: "success",
-			      cart: mycarts,
+            ]).then((docx)=>{
+                for (let i = 0; i < docx[0].info.length; i++){
+                    json.push(docx[0].info[i])
                 }
-              );
-		})
-	  });
+                res.send(json);
+                
+            })
+        }else{
+            res.send(json);
+        }
+    })
 });
 
-//Task1.8 更新购物车
-router.put("/updatecart", (req, res) => {
-  var productId = req.param('productId');
-  var quantity = req.param('quantity');
-  var userdb = req.db;
-  var userC = userdb.get("userCollection");
-  var col = req.db.get("productCollection");
-  var userId = req.cookies.userId;
-  console.log(req.cookies.userId);
-  userC
-    .find({
-      _id: userId,
+router.put('/updatecart', (req, res)=>{
+    var db = req.db;
+    var col = db.get('userCollection');
+    var productId = req.body.productId;
+    var quantity = parseInt(req.body.quantity);
+
+    col.find({"_id": req.cookies.userID}, {}, function(err, docx){
+        var cart = docx[0].cart;
+        var totalnum = docx[0].totalnum;
+
+        for (let i = 0; i < cart.length; i++){
+            var prod = cart[i];
+            
+            if (prod.productId == productId){
+                var temp = cart[i].quantity
+                cart[i].quantity = quantity;
+                var finalTotalnum = totalnum + (quantity - temp);
+                col.update(
+                    {"_id":monk.id(req.cookies.userID)},
+                    {$set:{
+                        "cart":cart, "totalnum":finalTotalnum
+                    }},
+                    function(err, result){
+                        res.send((err == null)?{"totalnum": finalTotalnum}:{msg: err});
+                    }
+                ) 
+            }
+        }
     })
-    .then((user) => {
-		  console.log(user);
-		  var exists=0;
-		if(user[0]!=null){
-			var totalnum;
-			totalnum = user[0].totalnum;
-			console.log(user);
-			console.log(user[0].cart);
-			for(var i=0;i<user[0].cart.length;i++){
-				console.log(user[0].cart[i].productId);
-				console.log(productId);
-				if(user[0].cart[i].productId==productId)
-				{
-					totalnum=totalnum-user[0].cart[i].quantity+quantity
-					user[0].cart[i].quantity=quantity;
-					console.log(totalnum);
-					console.log(quantity);
-				}
-			}
-			console.log(user[0].username);
-			console.log(totalnum);
-			userC.update({username : user[0].username}, { $set: { "cart": user[0].cart, "totalnum": totalnum  },}, (err, result) => { 
-				console.log(err);
-				console.log(result);
-			});		
-			user[0].totalnum=totalnum;
-			res.json({totalnum:totalnum});
-		}else{
-			res.send();
-		}
-    });			
 });
 
-//Task1.8-2 更新购物车
-// router.post("/updatecart", (req, res) => {
-//   var productId = req.param('productId');
-//   var quantity = req.param('quantity');
-//   var userdb = req.db;
-//   var userC = userdb.get("userCollection");
-//   var col = req.db.get("productCollection");
-//   var userId = req.cookies.userId;
-//   console.log(req.cookies.userId);
-//   userC
-//     .find({
-//       _id: userId,
-//     })
-//     .then((user) => {
-// 		  console.log(user);
-// 		  var exists=0;
-// 		if(user[0]!=null){
-// 			var totalnum;
-// 			totalnum = user[0].totalnum;
-// 			console.log(user);
-// 			console.log(user[0].cart);
-// 			for(var i=0;i<user[0].cart.length;i++){
-// 				console.log(user[0].cart[i].productId);
-// 				console.log(productId);
-// 				if(user[0].cart[i].productId==productId)
-// 				{
-// 					totalnum=totalnum-user[0].cart[i].quantity+quantity
-// 					user[0].cart[i].quantity=quantity;
-// 					console.log(totalnum);
-// 					console.log(quantity);
-// 				}
-// 			}
-// 			console.log(user[0].username);
-// 			userC.update({username : user[0].username}, { $set: { "cart": user[0].cart }}, (err, result) => { 
-// 				console.log(err);
-// 				console.log(result);
-// 			});		
-// 			userC.update({username : user[0].username}, { $set: { "totalnum": totalnum }}, (err, result) => { 
-// 				console.log(err);
-// 				console.log(result);
-// 			});	
-// 			user[0].totalnum=totalnum;
-// 			res.json({totalnum:totalnum});
-// 		}else{
-// 			res.send();
-// 		}
-//     });			
-// });
-//Task1.9 删除商品
-router.delete("/deletefromcart/:productid", (req, res) => {
-  // 参数提取
-  var productid = req.params.productid;
-  var userdb = req.db;
-  var userC = userdb.get("userCollection");
-  var userId = req.cookies.userId;
-  userC
-    .find({
-      _id: userId,
-    })
-    .then((user) => {
-		  console.log(user);
-		  var exists=0;
-		if(user[0]!=null){
-			var totalnum;
-			totalnum = user[0].totalnum;
-			console.log(user);
-			console.log(user[0].cart);
-			for(var i=0;i<user[0].cart.length;i++){
-				console.log(user[0].cart[i].productId);
-				console.log(productid);
-				if(user[0].cart[i].productId==productid)
-				{
-					totalnum=totalnum-user[0].cart[i].quantity;
-					user[0].cart.splice(i,1)
-				}
-			}
-			console.log(user[0].username);
-			userC.update({username : user[0].username}, { $set: { "cart": user[0].cart, "totalnum": totalnum }}, (err, result) => { 
-				console.log(err);
-				console.log(result);
-			});		
-			// userC.update({username : user[0].username}, { $set: { "totalnum": totalnum }}, (err, result) => { 
-			// 	console.log(err);
-			// 	console.log(result);
-			// });	
-			user[0].totalnum=totalnum;
-			res.json({totalnum:totalnum});
-		}else{
-			res.send();
-		}
-    });	
+router.delete('/deletefromcart/:productid', (req, res)=>{
+    var db = req.db;
+    var col = db.get('userCollection');
+    var productId = req.params.productid;
+
+    col.find({"_id": req.cookies.userID}, {}, function(err, docx){
+        console.log(docx);
+        var totalnum = docx[0].totalnum;
+        var cart = docx[0].cart;
+        for (let i = 0; i < cart.length; i++){
+            var prod = cart[i];
+            console.log(prod.productId + " " + productId)
+            console.log(prod.productId == productId)
+            if (prod.productId == productId){
+                var quantity = prod.quantity;
+                col.update(
+                    {"_id": req.cookies.userID},
+                    {$pull:
+                        {"cart":{"productId":monk.id(productId)}},
+                    $set: {"totalnum":totalnum - quantity}
+                    },
+                    function(err, result){
+                        res.send((err == null)?{"totalnum": totalnum - quantity}:{msg: err});
+                        return;
+                    }
+                )
+            }
+        }
+    })    
 });
 
-//Task1.10 结算
-router.get("/checkout", (req, res) => {
-  var userId = req.cookies.userId;
-  var userdb = req.db;
-  var userC = userdb.get("userCollection");
-  console.log(req.cookies.userId);
-  userC
-    .find({
-      _id: userId,
-    })
-    .then((user) => {
-		  console.log(user);
-		  var exists=0;
-		if(user[0]!=null){
-			var totalnum;
-			totalnum = user[0].totalnum;
-			console.log(user);
-			console.log(user[0].cart);
-			userC.update({username : user[0].username}, { $set: { "cart": [], "totalnum": 0  }}, (err, result) => { 
-				console.log(err);
-				console.log(result);
-			});		
-			// userC.update({username : user[0].username}, { $set: { "totalnum": 0 }}, (err, result) => { 
-			// 	console.log(err);
-			// 	console.log(result);
-			// });	
-			res.send();
-		}else{
-			res.send();
-		}
-    });			
+router.get('/checkout', (req, res)=>{
+    var db = req.db;
+    var col = db.get('userCollection');
+
+    col.update({_id:req.cookies.userID},
+        {$set: {
+            cart:[], 
+            totalnum: 0
+        }},
+        function(err, result){
+            if (err != null){
+                res.send(err);
+            }else{
+                res.send("");
+            }
+        }
+    )
 });
 
 module.exports = router;
