@@ -1,401 +1,127 @@
-/*
-  ================= Basic Elements. DO NOT MODIFY =================
-*/
-
-/* basic color and fonts */
 body {
   margin: 0;
-  background: #163a50;
-  font: 300 100%/120% "Tahoma", Arial, Helvetica, sans-serif;
+  background-color: rgb(180, 162, 237);
+  padding-left: 50px;
+  padding-right: 50px;
 }
 
-body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,xmp,pre,code,form,fieldset,legend,input,button,textarea,p,blockquote,th,td { margin:0; padding:0; }
-body { background:#f3f3f3; color:#333; font-size:14px; font-family: Microsoft YaHei,Verdana, Arial, Helvetica, sans-serif; }
-td,th,caption { font-size:14px; }
-h1, h2, h3, h4, h5, h6 { font-weight:normal; font-size:100%; }
-address, caption, cite, code, dfn, em, strong, th, var { font-style:normal; font-weight:normal;}
-a { color:#555; text-decoration:none; }
-a:hover { color:#2080bf;text-decoration:underline; }
-img,tr,td{ border:none; }
-td{word-break: break-all;}
-ol,ul,li { list-style:none; }
-input, textarea, select, button { font:14px Microsoft YaHei,Verdana, Arial, Helvetica, sans-serif; }
-table { border-collapse:collapse; border: none;}
-select{
-	appearance:none;
-	-moz-appearance:none;
-	-webkit-appearance:none;
-}
-.yt-option-button-sure{background: #3C7AB9 !important;}
-/*清除ie的默认选择框样式清除，隐藏下拉箭头*/
-select::-ms-expand { display: none; }
-/*隐藏ie输入框自带x样式*/
-::-ms-clear{display: none;}
-/*隐藏ie输入框密码自带小眼睛查看样式*/
-::-ms-reveal{display: none;}
-/*placeholder 字体颜色*/
-::-webkit-input-placeholder { /* WebKit browsers */ 
-color: #999 !important; 
-} 
-:-moz-placeholder { /* Mozilla Firefox 4 to 18 */ 
-color: #999 !important; 
-} 
-::-moz-placeholder { /* Mozilla Firefox 19+ */ 
-color: #999 !important; 
-} 
-:-ms-input-placeholder { /* Internet Explorer 10+ */ 
-color: #999 !important; 
-}
-.clear-both{
-	clear: both;
-}
-input::-webkit-input-placeholder, textarea::-webkit-input-placeholder {
-　color: #999 !important;
-}
-input:-moz-placeholder, textarea:-moz-placeholder {
-　color:#999 !important;
-}
-input::-moz-placeholder, textarea::-moz-placeholder {
-　color:#999 !important;
-}
-input:-ms-input-placeholder, textarea:-ms-input-placeholder {
-　color:#999 !important;
-}
-
-/*滚动条样式*/
-
- ::-webkit-scrollbar {
-	/*滚动条整体样式*/
-	width: 8px;
-	/*高宽分别对应横竖滚动条的尺寸*/
-	height: 8px;
-}
-
- ::-webkit-scrollbar-thumb {
-	/*滚动条里面小方块*/
-	background: #97C7ED;
-}
-
- ::-webkit-scrollbar-track {
-	/*滚动条里面轨道*/
-	background: #c8c8c8;
-}
-
-.tl{
-	text-align: left !important;	
-}
-.tr{
-	text-align: right !important;
-}
-.tc{
-	text-align: center !important;
-}
-.fl{
-	float: left !important;
-}
-.fr{
-	float: right !important;
-}
-.cb{
-	clear: both !important;
-}
-.dn{
-	display: none;
-}
-.db{
-	display: block;
-}
-
-
-header, nav, .contents, footer {
-box-sizing: border-box;
-max-width: 1080px;
-margin-left: auto;
-margin-right: auto;
-}
-
-header, nav, footer {
-background: #0f2736;
-}
-
-h1, h2, h3, h4 {
-font-weight: bold
-}
-
-.contents {
-padding: 1em 1em 1em 1em;
-}
-
-/* increase line spacing for main title */
-h1 {
-line-height: 150%;
-margin-top: 0;
-float: left;
-}
-
-/* size and margin for logo image */
-header img {
-max-width: 100%;
-max-height: 100%;
-margin: 0.5em;
-}
-
-/* style for nav bar */
-nav {
-text-align: left;
-}
-
-nav div {
-box-sizing: border-box;
-display: inline-block;
-/* the margin-top keeps nav bar aligned with bottom of the title */
-/* margin-top: 7.5em;  */
-/* margin-bottom: 0.5em; */
-/* margin-right: 0; */
-/* padding: 0.2em 0.8em 0.2em 0.8em; */
-height: 2em;
-text-align: left;
-}
-
-/* style for the table */
-table, th, td {
-border: 1px solid black;
-border-collapse: collapse;
-text-align: center;
-vertical-align: center;
-}
-
-thead tr td {
-font-weight: bold;
-}
-
-tr td {
-padding: 0.2em;
-}
-
-/* change color for links in the table */
-table a {
-font-weight: bold;
-color:#2b6a92;
-}
-
-/* style for the form */
-
-/* style for footer */
-footer {
-margin: auto;
-text-align: center;
-}
-
-footer div {
-padding: 1em;
-}
-
-header *, nav * {
-  color: #FFFFFF;
-}
-
-.contents {
-  background: #FFFFFF;
-}
-header{
-  text-align: center;
-  height: 3em;
-  line-height: 3em;
-}
-header img {
-  float: left;
-}
-header div{
-  display: inline-block;
-}
-header .search{
- background: #fff;
- height: 1.5em;
- margin-top: .75em;
-}
-header .search input,header .search select{
-  background: none;
-  border: none;
-  color: #000;
-  float: left;
-  height: 1.5em;
-  outline: none;
-}
-header .search select option{
-  color: #000;
-}
-header .search input{
-  width: 150px;
-}
-header .search .search-icon{
-  float: right;
-  height: 2em;
-  width: 2em; 
-  /* background: url(../img/search.png) no-repeat .25em .25em; */
-  background-size: 6em 6em;
+button, a, input, select{
   cursor: pointer;
 }
-header .title{
-  margin-left: 1em;
-  float: left;
-}
-header .login-name{
-  float: right;
-  margin-right: 1em;
-  cursor: pointer;
-  line-height: 1.5em;
-}
-header .login-name div{
-  display: block;
-}
-.contents h2 {
-  text-align: center;
-}
-.header-car{
-  height: 1.5em;
-  margin-left: 2em;
-  cursor: pointer;
-  line-height: 1.5em;
-}
-.header-car img{
-  height: 1.5em;
-  width:1.5em;
-  margin: 0 1em;
+
+.item {
+  padding-right: 20px;
+  color: blue;
 }
 
-.center {
-  margin: auto;
+.item a{
+  color: blue;
+  font-size: large;
+  font-weight: bolder;
 }
 
-input[type=submit] {
-  background-color: #2b6a92;
-  border: none;
-  color: #FFFFFF;
-  padding: 1em;
-  margin-top: 0.5em;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-input[type=submit]:hover {
-  box-shadow: 0 0 0.8em 0.1em grey;
-}
-
-#courses {
-  text-align: center;
-}
-
-a {
-  color: #0099cc; 
-  text-decoration: none;
-}
-
-p {
-  text-align: center;
-}
-
-#update_form {
-  text-align: center;
-}
-
-ul{
-  width: auto;
-  margin: 70px;
-}
-.products li{
-  display: inline-block;
-  width: 200px;
-  margin: 10px;
-}
-.products li img{
-  width: 200px;
-  height: 200px;
-  border: 1px solid;
-}
-.products li p{
-  text-align: left;
-  padding: 5px 20px;
-}
-
-.login-box label{
-  width: 100px;
-  display: inline-block;
-}
-.login-box div{
-  margin: 10px;
-}
-.login-page{
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  background: #fff;
-
-}
-.login-box{
-  width: 300px;
-  margin: 20% auto;
-}
-.login-btn{
-  text-align: center;
-}
-.login-btn button{
-  cursor: pointer;
-}
-.detail-img{
-  width: 200px;
-}
-.detail{
-  width: 100%;
-}
-.detial-info{
- padding: 10px;
-}
-.detial-info p{
-  text-align: left;
-}
-.detail-number{
-  width: 200px;
-}
-.continue-browsing{
-  background: none;
-  border: none;
-  cursor: pointer;
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -8px;
+  margin-right: -8px;
   margin: 0 auto;
-  display: block;
-  margin-top: 100px;
+  padding-left: 15%;
 }
 
-.back-btn{
-  background: none;
-  border: none;
+.cards__item {
+  flex-basis: 20%;
+  padding-left: 8px;
+  padding-right: 8px;
   cursor: pointer;
-  /* background: url(../img/back.png) no-repeat; */
-  background-size: 10px 10px;
-  padding-left: 20px;
 }
 
-@media only screen and (max-width: 1080px) {
-  header {
-    overflow: hidden;
-  }
-  nav {
-    display: inline-block;
-    width: 100%;
-    text-align: center;
-  }
-  nav div {
-    margin-top: 0;
-  }
+.topBar {
+  display: flex;
+  border-bottom: #0a0a0a 10px solid;
+  padding: auto;
+  margin-bottom: 50px;
+  
 }
 
-@media only screen and (max-width: 720px) {
-  nav {
-    text-align: left;
-  }
-  nav div {
-    width: 100%;
-  }
-} 
+#shoppingList {
+  display: flex;
+}
+
+#shoppingList p{
+  height: 10px;
+  /*border-right: rgb(180, 162, 237) 50px solid; */
+  padding: 10px;
+  cursor: pointer;
+}
+
+.log {
+  float: right;
+}
+
+.field {
+  color: red;
+}
+
+.field a {
+  color: blue;
+  text-decoration: underline;
+}
+
+#logInPage {
+  background-color: #00000068;
+  border-radius: 13px;
+  text-align: center;
+  margin: 0px auto;
+  margin-top: 80px;
+  width: 350px;
+  height: 400px;
+}
+
+#logInPage h1{
+  padding-top: 60px;
+  color: #ffffff;
+}
+
+#logInPage .input-box{
+  margin-top: 30px;
+}
+
+#logInPage .input-box input{
+  border: none;
+  background: none;
+  border-bottom: #ffffff 2px solid;
+  padding: 5px 10px;
+  outline: none;
+  color: #ffffff;
+}
+
+#logInPage button{
+  line-height: 30px;
+  margin-top: 30px;
+  width: 130px;
+  height: 30px;
+  border-radius: 13px;
+  outline: none;
+  border: none;
+  background-image: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+#logInPage button:hover{
+  background-image: linear-gradient(to top, #30cfd0, #330867 100%);
+}
+
+#welcome {
+  font-size: 30px;
+  color: #fefefe;
+  text-shadow: 0 0 0.5em #0ae642, 0 0 0.2em #5c5c5c;
+  padding-left: 40%;
+}
+
+#fail {
+  color: rgb(243, 241, 241);
+  font-size: large;
+  font-weight: bold;
+}

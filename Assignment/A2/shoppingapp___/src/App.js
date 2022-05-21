@@ -1,585 +1,685 @@
-import { Route, Routes} from 'react-router-dom'
-import './App.css';
 import React from 'react';
-// 路由配置
-import {Link} from 'react-router-dom'
+import logo from './logo.svg';
+import './App.css';
 import $ from 'jquery';
+import { type } from '@testing-library/user-event/dist/type';
 
-//历史页
-import { createBrowserHistory } from 'history'
-export const history = createBrowserHistory()
 
-class App extends React.Component {
-  constructor(props) {
+function CategoryList(props){
+  return(
+    <div className='item'>
+      <a onClick={(e)=>props.handleCategoryChange("Phones")}>Phones </a>
+      <a onClick={(e)=>props.handleCategoryChange("Tablets")}>Tablets </a>
+      <a onClick={(e)=>props.handleCategoryChange("Laptops")}>Laptops </a>
+    </div>
+  );
+}
+
+class Header extends React.Component{
+  constructor(props){
     super(props);
-    this.homeRef = React.createRef()
-    console.log(this.homeRef)
+
     this.state = {
-      dataList:[]
+      isLogIn: false,
+      productHeader: [],
+      category: "all",
+      jsxLogIn: [],
+      logInPage: false,
+      username: "",
+      password: "",
+      afterLogIn:[],
+      totalnum: 0,
     }
-    this.toDetail = this.toDetail.bind(this);
-    this.getDataList = this.getDataList.bind(this)
-  }
 
-  componentDidMount(){
-    this.getDataList()
-  }
-  toDetail(item) {
-    return '/detailed?id=' + item._id
-
-  }
-  //通过搜索框内容和类别获得数据
-  getDataList(searchstring,category){
-    // console.log(searchstring)
-    // console.log(category)
-    $.ajax({
-      type:'GET',
-      url: 'http://localhost:3001/loadpage',
-      data:{
-        "category":category||"",
-        "searchstring":searchstring || ""
-      },
-      dataType: "JSON",
-      crossDomain:true, //设置跨域为true
-      xhrFields: {
-          withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-      },
-      async: false
-    }).done(function(response){
-      this.setState({dataList:response})
-      // console.log(response)
-    }.bind(this));;
-  }
-  
-  onRef(ref){
-    this.child = ref
-  }
-  home (){
+    this.handleCategoryChange = this.handleCategoryChange.bind(this);
+    this.searchProduct = this.searchProduct.bind(this);
+    this.handleInputChange = this.handleInputChange.bind(this);
+    //this.props.handleSearchProduct = this.props.handleSearchProduct.bind(this);
+    this.handleShoppingCartPage = this.handleShoppingCartPage.bind(this)
+    this.logIn = this.logIn.bind(this);
     
-    this.listItems = this.state.dataList.map((item) =>
-    <Link to={this.toDetail(item)}  key={item._id}>
-      <li>
-        <img src={`http://127.0.0.1:3001/`+`${item.productImage}`} alt=''/>
-        <p>{item.name}</p>
-        <p>{item.price}</p>
-      </li>
-    </Link>
-    );
-    return (
-        <div>
-          <ul className='products'>
-            {this.listItems}
-          </ul>
-        </div>
-    );
-  }
-  render() {
-    return (
-      <div>
-        <Header getDataList={this.getDataList} />
-        <div className="contents">
-          <Routes>
-            <Route element={<Login/>} path='/login'></Route>
-            <Route element={this.home()} path='/home'></Route>
-            <Route element={<Detailed/>} path='/detailed'></Route>
-            <Route element={<Cart/>} path='/cart'></Route>
-            <Route element={<Finish/>} path='/finish'></Route>
-          </Routes>
-        </div>
-      </div>
-    );
-  }
-}
-
-export default App;
-//还未调试
-class Finish extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-    }
-  }
-  render() {
-    return (
-      <div>
-        <p>You have successfully placed order</p>
-        <p>for XX items</p>
-        <p>&nbsp;</p>
-        <p>$XX paid</p>
-        <Link to='/home'><button className='continue-browsing'>continue browsing &gt; </button>  </Link>
-      </div>
-    );
-  }
-}
-
-//还未调试
-class Cart extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-        numbers :[]
-    }
-    
-    this.handlerChange = this.handlerChange.bind(this)
-    this.checkout = this.checkout.bind(this)
-  }
-  componentDidMount(){
-    this.getDataList()
-  }
-  handlerChange (e,index){
-    let value = e.target.value < 0 ? 0 : e.target.value
-    console.log(value)
-    let arr = this.state.numbers;
-    arr[index].quantity = value
-    this.setState({numbers:[...arr]});
-    var id =  this.props.arr[index]._id;
-    if(Number(value) === 0){
-      $.ajax({
-        type: 'POST',
-        url: 'http://localhost3001/deletefromcart/'+ id,
-        dataType: "json",
-        crossDomain:true, //设置跨域为true
-        xhrFields: {
-            withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-        },
-        async: false,
-        success: (res)=>{
-          if(res){
-            this.getDataList()
-          }
-        }
-      });
-    }else{
-      $.ajax({
-        type:'PUT',
-        url: 'http://localhost3001/updatecart',
-        data:{"productId":arr[index].productId,"quantity":Number(value)},
-        dataType: "json",
-        crossDomain:true, //设置跨域为true
-        xhrFields: {
-            withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-        },
-        async: false,
-        success: (res)=>{
-          if(res){
-            this.getDataList()
-          }
-        }
-      });
-    }
-
-  }
-  getDataList(){
-    $.ajax({
-      type:'GET',
-      url: 'http://localhost3001/loadcart',
-      data:{
-      },
-      dataType: "json",
-      crossDomain:true, //设置跨域为true
-      xhrFields: {
-          withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-      },
-      async: false,
-      success: (res)=>{
-        if(res && res.cart.length > 0){
-          this.setState({numbers:res.cart})
-        }
-      }
-    });
-  }
-  checkout(){
-    $.ajax({
-      type: 'GET',
-      url: 'http://localhost3001/checkout',
-      dataType: "json",
-      crossDomain:true, //设置跨域为true
-      xhrFields: {
-          withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-      },
-      async: false,
-      success: (res)=>{
-      }
-    });
-    window.location.href = '/#/finish'
-  }
-  render() {
-    let totalPrice = 0
-    this.state.numbers.forEach(element => {
-      totalPrice += element.price * element.quantity
-    });
-    return (
-     <div>
-       <table className='detail'>
-          <tbody>
-            {this.state.numbers.map((item,index) =>
-              <tr  key={item.productId}>
-                <td className='detail-img'>
-                  <img src="" alt=''/>
-                </td>
-                <td className='detial-info'>
-                  <p>{item.name}</p>
-                </td>
-                <td className='detial-info'>
-                <p>{item.price}</p>
-                </td>
-                <td className='detail-number'>
-                  <div>
-                    <p>Quantity <input type='number' value={item.quantity} onChange={(e) => {this.handlerChange(e,index)}}></input></p>
-                  </div>
-                </td>
-              </tr>
-        )}
-          </tbody>
-        </table>
-        <p>Cart subtotal ({this.state.numbers.length} items) : ${totalPrice}</p>
-        <button onClick={this.checkout}>Proceed to check out</button>
-     </div>
-    );
-  }
-}
-//返回部分已经完成
-class Back extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-    }
-    this.goBack = this.goBack.bind(this);
-  }
-  goBack() {
-    history.go(-1)
-  }
-  render() {
-    return (
-      <button onClick={this.goBack} className='back-btn'><img src="http://127.0.0.1:3001/images/back.png" ></img>go back</button>
-    );
-  }
-}
-
-class Detailed extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      id:'',
-      detailInfo:{},
-      quantity:1,
-      toCartPage:false
-    }
    
   }
-  componentDidMount(){
-    // 操作本页面地址，取出id
-    let id = window.location.href.split('?')[1].split('=')[1]
-    this.getData(id)
-    this.addToChar = this.addToChar.bind(this)
-    this.handlerChange = this.handlerChange.bind(this)
-  }
-  handlerChange(e){
-    this.setState({quantity:e.target.value})
-  }
-  addToChar(){
-    let id = window.location.href.split('?')[1].split('=')[1]
+
+  handleShoppingCartPage(){
+    //console.log("have clicked");
     $.ajax({
-        type: 'PUT',
-        url: `http://localhost:3001/addtocart`,
-        dataType: 'JSON',
-        crossDomain:true, //设置跨域为true
-        data: {'productId':id, "quantity": Number(this.state.quantity)},
-        xhrFields: {
-          withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-      },
-      async: false
-  }).done(function(res){
-        console.log(res);
-        this.setState({toCartPage:false});
-        window.location.reload()
-        // console.log(this.state.toCartPage)
-  }.bind(this));
+      type: "GET",
+      url: "http://localhost:3001/loadcart",
+      dataType: "json",
+      xhrFields: {withCredentials: true},
+      success: function(data){
+        console.log(data);
+        this.props.handleShoppingCartItem(data);
+        this.props.handlePage("shoppingCartPage");
+        
+      }.bind(this)
+    })
   }
 
-  getData(id){
+  render(){
+    let page = [];
+    let logButton = null;
+    
+    var sessionInfo = this.props.sessionInfo;
+    var hasSession = false;
+    
+    if(sessionInfo != ""){
+      hasSession = true;
+      //console.log(sessionInfo);
+      this.state.isLogIn = true;
+      this.state.logInPage = false;
+      this.state.afterLogIn = [{"name": sessionInfo[0].username, "totalnum": sessionInfo[1].totalnum}]
+    }
+
+    var userShoppingList;
+      //console.log(this.state.afterLogIn == []);
+      if (this.state.afterLogIn.length != 0){
+        //console.log(this.state.afterLogIn);
+        var name = this.state.afterLogIn[0].name;
+        var totalnum = this.state.afterLogIn[0].totalnum;
+        //console.log(name);
+        //console.log(totalnum);
+        userShoppingList = <div id='shoppingList' onClick={(e)=>this.handleShoppingCartPage()}>
+                            <img src={"http://localhost:3001/images/shopping.jpg"} 
+                              style={{height:"20px", width:"20px"}} />
+                            <p id='detail'>of shopping {totalnum} in Cart</p>
+                            <p style={{float: "right"}}>Hello {name}</p>
+                         </div>
+      }
+
+    if (this.state.isLogIn == false){
+      logButton = <button onClick={this.logIn.bind(this)} className='log' id='logIn'>Log In</button>
+    }else{
+      logButton = <button onClick={this.logOut.bind(this)} className='log'id='logout'>Log Out</button>
+    }
+
+    if (this.state.logInPage){
+      page.push(this.state.jsxLogIn);
+    }else{
+      if (this.state.isLogIn == false){
+        page.push(
+        <React.Fragment>
+        <CategoryList 
+          handleCategoryChange = {this.handleCategoryChange}
+        />
+        <select onChange={(e) => this.handleCategoryChange(e.target.value)}>
+          <option value ={"all"}>all</option>
+          <option value ={"Phones"}>phones</option>
+          <option value={"Tablets"}>tablets</option>
+          <option value={"Laptops"}>laptops</option>
+        </select>
+        <input 
+          type="text"
+          name="productHeader"
+          placeholder="Choose Product"
+          value={this.state.productHeader}
+          onChange={this.handleInputChange}
+        />
+        <button onClick={this.searchProduct}>Search</button>
+        {logButton}</React.Fragment>);
+      }else{
+        page.push(
+          <React.Fragment>
+          <CategoryList 
+            handleCategoryChange = {this.handleCategoryChange}
+          />
+          <select onChange={(e) => this.handleCategoryChange(e.target.value)}>
+            <option value ={"all"}>all</option>
+            <option value ={"Phones"}>phones</option>
+            <option value={"Tablets"}>tablets</option>
+            <option value={"Laptops"}>laptops</option>
+          </select>
+          <input 
+            type="text"
+            name="productHeader"
+            placeholder="Choose Product"
+            value={this.state.productHeader}
+            onChange={this.handleInputChange}
+          />
+          <button onClick={this.searchProduct}>Search</button>
+          {userShoppingList}
+          {logButton}</React.Fragment>);
+      }
+    }
+
+    return(
+      <div className='topBar'>
+        {page}
+      </div>
+    );
+  }
+
+  
+  handleCategoryChange(category) {
+
     $.ajax({
-              type: 'GET',
-              url: `http://localhost:3001/loadproduct/` + id,
-              // data: new_doc,
-              dataType: 'JSON',
-              crossDomain:true, //设置跨域为true
-              xhrFields: {
-                withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-              },
-              async: false
-          }).done(function(res){
-              // console.log(res);
-              this.setState({detailInfo:res[0]})
-          }.bind(this));
+      type: "GET",
+      dataType: "json",
+      url:`http://localhost:3001/loadpage?category=${category}&searchstring=${""}`,
+      xhrFields:{withCredentials: true},
+      success: function(data){
+        this.setState({category: category});
+        this.props.handleSearchProduct(data);
+        this.props.handlePage("search");
+      }.bind(this)
+    })
+  }
+
+  handleInputChange(event){
+    const target = event.target;
+    const value = target.value;
+    const name = target.name;
+    this.setState({[name]: value});
+  }
+
+  searchProduct(){
+    var product = this.state.productHeader;
+    var category = this.state.category;
+    //this.props.handlePage("");
+    
+    $.ajax({
+      type: "GET",
+      dataType: "json",
+      url: `http://localhost:3001/loadpage?category=${category}&searchstring=${product}`,
+      xhrFields:{withCredentials: true},
+      success: function(data) {
+        this.props.handleSearchProduct(data);
+        this.props.handlePage("search");
+      }.bind(this)
+    })
   }
   
-  render() {
-    if(this.state.toCartPage){
-      return (
-        <div>
-          <table className='detail'>
-            <tbody>
-              <tr>
-                <td className='detail-img'>
-                <p>${this.state.detailInfo.productImage}</p>
-                <img src={`http://127.0.0.1:3001/`+`${this.state.detailInfo.productImage}`} alt=''/>
-                </td>
-                <td className='detial-info'>
-                  <div>
-                    √ Added to Cart
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <Link to='/home'><button className='continue-browsing'>continue browsing &gt; </button>  </Link>
-          
-        </div>
-      )
-    }else{
 
-      return (
-        <div>
-          <table className='detail'>
-            <tbody>
-              <tr>
-                <td className='detail-img'>
-                <img src={`http://127.0.0.1:3001/`+`${this.state.detailInfo.productImage}`} alt=''/>
-                </td>
-                <td className='detial-info'>
-                  <p>{this.state.detailInfo.name}</p>
-                  <p>{this.state.detailInfo.price}</p>
-                  <p>{this.state.detailInfo.manufacturer}</p>
-                  <p>{this.state.detailInfo.description}</p>
-                </td>
-                <td className='detail-number'>
-                  <div>
-                    <p>Quantity <input type='number' defaultValue={'1'} onChange={(e) => {this.handlerChange(e)}}></input></p>
-                    <button onClick={this.addToChar}>Add to Cart</button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <Back/>
-        </div>
-      );
-    }
-  }
-}
-
-//登录部分已经完成
-class Login extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      userName:'',
-      password:'',
-      status: "incorrect"
-    }
-    this.login = this.login.bind(this)
-    this.handlerInput = this.handlerInput.bind(this)
-    
-  }
-  login (){
-    if(this.state.userName === '' || this.state.password === ''){
+  handleCompare(){
+    var username = document.getElementById("username").value;
+    var password = document.getElementById("password").value;
+    //alert(username);
+    //alert(password);
+    var afterLogIn=[]
+    if (username == "" || password == ""){
       alert("You must enter username and password");
     }else{
       $.ajax({
-        type:'POST',
-        url: 'http://localhost:3001/signin',
-        dataType: "json",
-        data: {
-          "username":this.state.userName,
-          "password":this.state.password
-        },
-        crossDomain:true, //设置跨域为true
-        xhrFields: {
-            withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-        },
-        success: function(res){
-          console.log(res);
-          if(res){
-            if (res.status == "success"){
-              window.location.href = '/#/home'
-              window.location.reload();
-            }else{
-              alert("Login failure");
+        type: "POST",
+        url: "http://localhost:3001/signin",
+        data: {"username":username, "password":password},
+        xhrFields:{withCredentials: true},
+        success: function(data){
+          if (data == "Login failure"){
+            if (document.getElementById("fail") == null){
+              var p = document.createElement("p");
+              p.innerHTML = "Login Fail";
+              p.setAttribute("id", "fail");
+              document.getElementById("logInPage").appendChild(p);
             }
-            
+          }else{
+            afterLogIn.push({"name": username, "totalnum": data[0].totalnum});
+            this.setState({logInPage: false});
+            this.setState({afterLogIn: afterLogIn});
+            this.props.handleAfterLogIn(afterLogIn);
+            //console.log(this.state.afterLogIn);
+            this.setState({isLogIn: true});
+            this.props.handlePage("initial");
+            this.props.isLogIn(true);
           }
-        }
-     });
+        }.bind(this)
+    })
     }
-  }
-  getUserInfo(){
-    $.ajax({
-      type: 'GET',
-      url: "http://localhost:3001/getsessioninfo",
-      dataType: "json",
-      crossDomain:true, //设置跨域为true
-      xhrFields: {
-          withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-      },
-      success: function(res){
-        if(res._id){
-          // window.location.href = "/#/home"
-        }
-      }
-   });
   }
 
-  handlerInput(e){
-    if(e.target.type === 'text'){
-      this.setState({userName : e.target.value})
-    }else{
-      this.setState({...this.state,password : e.target.value})
-    }
-  }
-  render() {
-    // this.getUserInfo()
-    return (
-      <div className='login-page'>
-        <div className='login-box'>
-            <div><label>Username</label> <input type='text' onChange={this.handlerInput}/></div>
-            <div><label>Password</label> <input type='password' onChange={this.handlerInput}/></div>
-            <div className='login-btn'>
-              <button onClick={this.login}>Sign in</button>
-            </div>
-        </div>
-      </div>
-    );
-  }
-}
-
-//导航栏组件
-class Header extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      // the string displayed in the button that is used to login/logout
-      userId:'',
-      userName:'',
-      logButtonString : "Sign in",
-      totalnum:0,
-      searchstring :'',
-      type:''
-    }
+  logIn(){
     
-    this.handlerInput = this.handlerInput.bind(this)
-    this.handlerChange = this.handlerChange.bind(this)
-    this.search = this.search.bind(this)
-    this.logOut = this.logOut.bind(this)
-    this.toCart = this.toCart.bind(this)
+    // ajax request
+    this.setState({logInPage: true});
+    this.props.handlePage("login");
+    var jsxLogIn = <div id='logInPage'>
+                      <h1>Login</h1>
+                      <div className='input-box'>
+                        <input type="text" id='username' placeholder="User Name"/>
+                      </div>
+                      <div className='input-box'>
+                        <input type="text" id='password' placeholder="Password"/>
+                      </div>
+                      <button onClick={this.handleCompare.bind(this)}>Sign in</button>
+                   </div>;
+    this.setState({jsxLogIn: jsxLogIn});  
   }
-  componentDidMount(){
-    this.getUserInfo()
-  }
-  //搜索方法，显示搜索的类别和输入框内容，同时通过getDataList方法获取相关数据
-  search(){
-    console.log(this.state.searchstring)
-    console.log(this.state.type)
-    this.props.getDataList(this.state.searchstring,this.state.type)
-  }
-  // 更改类别
-  handlerChange(e){
-    this.setState({type : e.target.value})
-    console.log({type : e.target.value})
-  }
-  // 输入框接收
-  handlerInput(e){
-    this.setState({searchstring : e.target.value})
-    console.log({searchstring : e.target.value})
-    console.log(this.state.searchstring)
-  }
-  // 登出，连接后端signout
+
   logOut(){
+    this.setState({isLogIn: false, afterLogIn: []});
+    this.props.isLogIn(false);
+    this.props.handlePage("initial");
+    this.props.handleSessionInfo("");
     $.ajax({
       type: "GET",
       url: "http://localhost:3001/signout",
-      dataType: "JSON",
-      crossDomain:true, //设置跨域为true
-      xhrFields: {
-          withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-      },
-      async: false
-    }).done(function(response) {
-      }.bind(this));
-    // 刷新页面返回首页
-   window.location.href = '/#/home';
-   window.location.reload()
+      xhrFields:{withCredentials: true},
+      success: function(data){
+        if (data != ""){
+          alert(data);
+        }
+      }.bind(this)
+    })
+    ;
   }
-  // 获取用户信息
-  getUserInfo(){
+}
+
+function Item(props){
+  return(
+    <div className="cards__item" onClick={(e)=>props.onClicked(props.id)}>
+      <img src={"http://localhost:3001/" + props.productImage} 
+           style={{height:"100px", width:"100px"}}/>
+      <p>{props.name}</p>
+      <p>{props.price}</p>
+    </div>
+  )
+}
+
+class Body extends React.Component{
+  constructor(props){
+    super(props);
+    this.productInitialPage = this.productInitialPage.bind(this);
+    this.getSession = this.getSession.bind(this);
+    this.handleOneItemPage = this.handleOneItemPage.bind(this);
+    this.handleQuantityChange = this.handleQuantityChange.bind(this);
+    this.addToCart = this.addToCart.bind(this);
+    this.back = this.back.bind(this);
+    this.checkOut = this.checkOut.bind(this);
+    this.handleUpdateRemove = this.handleUpdateRemove.bind(this);
+    
+
+    this.state={initialProduct: [], 
+                sessionInfo:"",
+                oneProductPage:"",
+                quantity:0,
+                totalItemNum:0,
+                totalPrice:0,
+                test:0,
+                oneProduct: ""
+    };
+  }
+  
+  handleQuantityChange(quantity){
+    this.setState({quantity: quantity});
+  }
+
+  addToCart(product, quantity){
+    var name;
+    var isLogIn = this.props.isLogIn;
+    var sessionInfo = this.props.sessionInfo;
+    //console.log(isLogIn);
+    //console.log(sessionInfo);
+    //console.log(quantity);
+    console.log(product)
+    //console.log(sessionInfo == null)
+    if (isLogIn == false){
+      document.getElementById('logIn').click();
+    }else{
+      if (quantity == 0){
+        alert("At least you should buy one.");
+      }else{
+        console.log(product[0]._id + " "+ quantity);
+        $.ajax({
+        type: "PUT",
+        url: "http://localhost:3001/addtocart",
+        xhrFields:{withCredentials: true},
+        data: {productId: product[0]._id, quantity: quantity},
+        success: function(data){
+          console.log(data);
+          document.getElementById("detail").innerHTML = `of shopping ${data.totalnum} in Cart`;
+          this.props.handlePage("addToCart");
+        }.bind(this)
+      })
+      }
+    }
+  }
+
+  back(){
+    this.props.handlePage("initial");
+  }
+
+  handleOneItemPage(id){
+    //console.log(id);
     $.ajax({
       type: "GET",
+      url: "http://localhost:3001/loadproduct/" + id,
+      xhrFields: {withCredentials: true},
+      success: function(data){
+        this.state.oneProduct = data;
+        //console.log(data);
+        var page = <div id='abc'><div className="oneProductPage">
+                    <img src={"http://localhost:3001/" + data[0].productImage} style={{float: "left", width: "100px", height: "100px"}}/>
+                    <p>{data[0].name}<br />Price: {data[0].price}<br />Manufacturer Info: {data[0].manufacturer}
+                      <br />{data[0].description}
+                    </p>
+                    <form style={{float:"right"}}>
+                      <fieldset className='field'>
+                        <legend>Add To Cart</legend>
+                        Quantity: <select onChange={(e) => this.handleQuantityChange(e.target.value)}>
+                                    <option value ={0}>0</option>
+                                    <option value ={1}>1</option>
+                                    <option value ={2}>2</option>
+                                    <option value={3}>3</option>
+                                    <option value={4}>4</option>
+                                  </select>
+                        <a onClick={(e) => this.addToCart(data, this.state.quantity)}>Add to Cart</a>
+                      </fieldset>
+                    </form>
+                   </div>
+                   <div className='goBack'>
+                      <button onClick={(e) => this.back()}>{"<"} go back</button>
+                   </div>
+                   </div>
+        this.setState({oneProductPage: page});
+        this.props.handlePage("oneProductPage");
+      }.bind(this)
+    })
+  }
+
+  productInitialPage() {
+    
+    $.getJSON(`http://localhost:3001/loadpage?category=${"all"}&searchstring=`,
+    function(data, status){
+      //console.log(data);
+      
+      this.setState({initialProduct : data});
+    }.bind(this))
+  }
+
+  getSession() {
+    var sessionInfo;
+    //if (this.props.sessionInfo != ""){
+      $.ajax({
+      type: "GET",
       url: "http://localhost:3001/getsessioninfo",
-      dataType: "JSON",
-      crossDomain:true, //设置跨域为true
-      xhrFields: {
-          withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-      },
-      }).done(function(res) {
-        if(res._id){
-          this.setState({logButtonString:res.username,userId:res._id,totalnum:res.totalnum});
+      xhrFields:{withCredentials: true},
+      success: function(data){
+        sessionInfo = data;
+        //console.log(sessionInfo);
+        if (sessionInfo != ""){
+          this.props.handleLogIn(true);
+        }   
+        this.props.handleSessionInfo(sessionInfo);
+      }.bind(this)
+    })
+  //}
+  }
+
+  componentDidMount(){
+     this.productInitialPage();
+     this.getSession();
+  }
+
+  continueB(){
+    window.location.reload();
+    this.props.handlePage("initial");
+  }
+
+  checkOut(){
+    if (this.state.totalItemNum != 0){
+      $.ajax({
+        type: "GET",
+        url: "http://localhost:3001/checkout",
+        xhrFields: {withCredentials: true},
+        success: function(data){
+          if (data == ""){
+            alert("success checked out");
+            document.getElementById("detail").innerHTML = 'of shopping 0 in Cart';
+            this.props.handlePage("checkout");
+            this.state.totalItemNum = 0;
+            this.state.totalPrice = 0;
+          }
+        }.bind(this)
+      })
+    }else{
+      alert("No item to checkout!");
+    }
+  }
+
+  handleUpdateRemove(productId, value, name){
+    console.log(value);
+    console.log(productId);
+    console.log(name);
+    if (value != 0){
+      console.log("send");
+      $.ajax({
+        type: "PUT",
+        url: "http://localhost:3001/updatecart",
+        xhrFields: {withCredentials: true},
+        data: {productId: productId, quantity: value},
+        success: function(data){
+          console.log(data);
+          this.props.handlePage("shoppingCartPage");
+          document.getElementById("detail").innerHTML = `of shopping ${data.totalnum} in Cart`;
+          document.getElementById("shoppingList").click();
+        }.bind(this)
+      })
+    }else{
+      $.ajax({
+        type: "DELETE",
+        url: "http://localhost:3001/deletefromcart/" + productId,
+        xhrFields: {withCredentials: true},
+        success: function(data){
+          console.log(data);
+          //this.props.handlePage("shoppingCartPage");
+          //document.getElementById("reload").click();
+          //window.location.reload();
+          document.getElementById("shoppingList").click();
+          document.getElementById("detail").innerHTML = `of shopping ${data.totalnum} in Cart`;
+        }.bind(this)
+      })
+    }
+  }
+
+  render(){
+    var product = this.props.inputSearchProduct;
+    var line = [];
+    
+    if (this.props.page == "initial"){
+      product = this.state.initialProduct;
+    }
+
+    if (this.props.page == "initial" || this.props.page == "search"){
+      for (let i = 0; i < product.length; i++){
+        if ((i + 1) % 4 != 0){
+          line.push(<Item productImage = {product[i].productImage}
+                        name = {product[i].name}
+                        price = {product[i].price}
+                        id = {product[i]._id}
+                        onClicked = {this.handleOneItemPage}                     
+          />)
         }else{
-          this.setState({userId:''});
+          line.push(<Item productImage = {product[i].productImage}
+                        name = {product[i].name}
+                        price = {product[i].price}
+                        id = {product[i]._id}
+                        onClicked = {this.handleOneItemPage}
+          />)
         }
-      }.bind(this));
-  }
-  // 导航到购物车
-  toCart(){
-    window.location.href = '/#/cart'
-  }
-  // 显示页面
-  render() {
-    const userId = this.state.userId;
- 
-    let button = null;
-    // 如果没登录，就跳转到登录页面；如果登录了，就显示为登出按钮
-    if (userId) {
-      button = <div>
-        <div>Hello {this.state.logButtonString}</div>
-        <div>
-          <div onClick={this.logOut} className="login-out">Sign out</div>
+      }
+    }else if (this.props.page == "oneProductPage"){
+      line.push(this.state.oneProductPage);
+    }else if (this.props.page == "shoppingCartPage"){
+      console.log(this.props.shoppingCartItem);
+      var shoppingCartItem = this.props.shoppingCartItem;
+      console.log(shoppingCartItem[0]);
+      var totalPrice = 0;
+      var eachItemRow = [];
+      //try{
+        if (shoppingCartItem != null){
+
+        
+        console.log(shoppingCartItem);
+        for (let i = 0; i < shoppingCartItem[0].length; i++){
+          //console.log(shoppingCartItem[i+2].productImage);
+          eachItemRow.push(<tr>
+                            <td>
+                              <img src={"http://localhost:3001/" + shoppingCartItem[i+2].productImage}
+                                  style={{height: "100px", width: "100px"}} />
+                            </td>
+                            <td>{shoppingCartItem[i+2].name}</td>
+                            <td>${shoppingCartItem[i+2].price}</td>
+                            <td><input type="number" min={0} max={100} step={1} 
+                                defaultValue={shoppingCartItem[0][i].quantity}
+                                onChange={(e)=>this.handleUpdateRemove(shoppingCartItem[i+2]._id, e.target.value, shoppingCartItem[i+2].name)} id="numberChange"/></td>
+                           </tr>
+                          );
+          totalPrice = totalPrice + shoppingCartItem[i+2].price * shoppingCartItem[0][i].quantity;
+          
+        }
+        console.log(shoppingCartItem[1])
+        this.state.totalItemNum = shoppingCartItem[1]; 
+        this.state.totalPrice = totalPrice;
+      //}catch(err){
+        //console.log("123");
+        //eachItemRow = [];
+      //}
+      }
+      console.log(totalPrice);
+      
+      line.push(<React.Fragment>
+                  <h1>Shopping Cart</h1>
+                  <table className='shoppingCart'>
+                    <tr>
+                      <th>Images</th>
+                      <th>Item Name</th>
+                      <th>Price</th>
+                      <th>Quantity</th>
+                    </tr>
+                    {eachItemRow}
+                  </table>
+                  <h3>Cart subtotal ({shoppingCartItem[1]} item(s)): ${totalPrice}</h3>
+                  <button onClick={(e)=>this.checkOut()}>Proceed to check out</button>
+                  <a id="reload" onClick={(e)=>this.continueB()}>continue browsing {">>>"}</a>
+                </React.Fragment>)
+    }else if (this.props.page == "checkout"){
+      var num = this.state.totalItemNum;
+      var price = this.state.totalPrice;
+
+      line.push(<React.Fragment>
+        <div className='paid'>
+          <h3>√ You have successfully placed order for {num} item(s)</h3>
+          <h3>${price} paid</h3>
         </div>
-      </div>;
-    } else {
-      button = <Link to={'/login'}><div>Sign in</div></Link>;
+        <div className='continueBrowsing'>
+          <a onClick={(e)=>this.continueB()}>continue browsing {">>>"}</a>
+        </div>
+      </React.Fragment>)
+    }else if (this.props.page == "addToCart"){
+      console.log(this.state.oneProduct);
+      line.push(<React.Fragment>
+        <div className='addToCart'>
+          <img src={"http://localhost:3001/" + this.state.oneProduct[0].productImage} 
+              style={{height:"100px", width:"100px"}} />
+          <p>√ Added to Cart</p>
+        </div>
+        <div className='continueBrowsing'>
+        <a onClick={(e)=>this.continueB()}>continue browsing {">>>"}</a>
+        </div>
+      </React.Fragment>)
     }
 
-    let cartInfo = null;
-    if(userId){
-      cartInfo = 
-      <div className='header-car' onClick={this.toCart}>
-          {/* <img src={imgURL} alt=""/> */}
-          <span>{this.state.totalnum} in Cart</span>
+    return(
+      <React.Fragment>
+      <div id='bodyContent'>
+        {(this.props.page == "initial" || this.props.page == "search")?
+          <div className='cards'>
+            {line}
+          </div>
+        :<div>{line}</div>}
       </div>
+      <div id='welcome'>
+        <p>Welcome to the iShop!</p>
+      </div>
+      </React.Fragment>
+    )
+  }
+}
+
+class App extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {
+      isLogIn : false,
+      inputSearchProduct: [],
+      page: "initial",
+      sessionInfo: "",
+      shoppingCartItem: "",
+      afterLogIn:[]
     }
+    this.handleLogIn = this.handleLogIn.bind(this);
+    this.handleSearchProduct = this.handleSearchProduct.bind(this);
+    this.handlePage = this.handlePage.bind(this);
+    this.handleSessionInfo = this.handleSessionInfo.bind(this);
+    this.handleShoppingCartItem = this.handleShoppingCartItem.bind(this);
+    this.handleAfterLogIn = this.handleAfterLogIn.bind(this);
+  }
 
-    return (
-      <header>
-        <div className="title">Phones Tablets Laptops</div>
-        <div className="login-name">
-          {button}
-        </div>
-        <div className="search">
-          <select onChange={this.handlerChange}>
-            <option value="">ALL</option>      
-            <option value="Phones">Phones</option>      
-            <option value="Tablets">Tablets</option>      
-            <option value="Laptops">Laptops</option>      
-          </select>
-          <input type="text" onChange={this.handlerInput}/>
-          <button onClick={this.search} className="search-icon"><img src="http://127.0.0.1:3001/images/search.png" /></button>
-        </div>
-        <div className='cart-info'>
-          {cartInfo}
+  handlePage(page){
+    this.setState({page:page});
+  }
+  
+  handleLogIn(data){
+    this.setState({
+      isLogIn : data
+    });
+  }
 
-        </div>
-      </header>
+  handleSearchProduct(Search){
+    this.setState({
+      inputSearchProduct : Search
+    });
+  }
+
+  handleSessionInfo(name){
+    this.setState({
+      sessionInfo: name
+    })
+  }
+
+  handleShoppingCartItem(item){
+    console.log(item);
+    this.setState({
+      shoppingCartItem: item
+    })
+  }
+
+  handleAfterLogIn(data){
+    this.setState({
+      afterLogIn: data
+    })
+  }
+
+  render(){
+    return(<React.Fragment>
+      <Header 
+        key={" "}
+        isLogIn = {this.handleLogIn} 
+        handleSearchProduct = {this.handleSearchProduct}
+        sessionInfo = {this.state.sessionInfo}
+        handlePage = {this.handlePage}
+        handleSessionInfo = {this.handleSessionInfo}
+        handleShoppingCartItem = {this.handleShoppingCartItem}
+        handleAfterLogIn = {this.handleAfterLogIn}
+      />
+      <Body 
+        key={"2"}
+        page = {this.state.page}
+        handlePage = {this.handlePage}
+        inputSearchProduct = {this.state.inputSearchProduct}
+        handleSessionInfo = {this.handleSessionInfo}
+        shoppingCartItem = {this.state.shoppingCartItem}
+        isLogIn = {this.state.isLogIn}
+        sessionInfo = {this.state.sessionInfo}
+        afterLogIn = {this.state.afterLogIn}
+        handleLogIn = {this.handleLogIn}
+        
+      />
+    </React.Fragment>
     );
   }
 }
 
+
+export default App;
