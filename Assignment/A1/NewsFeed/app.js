@@ -14,16 +14,6 @@ app.use(express.static('public'), function (req, res, next) {
     next();
 })
 
-/*
-// use middleware
-app.use(session({
-  secret: 'random_string_goes_here', 
-resave: false,
-saveUninitialized: true
-}));
-*/
-
-
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + "/public/" + "newsfeed.html");
