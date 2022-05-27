@@ -1,3 +1,3 @@
-#COMP3322  
+# COMP3322 course codes
 2021-2022 sem 2  
-#Prof. Wu Chuan
+# Prof. Wu Chuan
